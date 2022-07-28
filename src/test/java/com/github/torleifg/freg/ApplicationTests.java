@@ -20,6 +20,7 @@ import reactor.core.publisher.Mono;
 
 import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ApplicationTests {
@@ -70,5 +71,12 @@ class ApplicationTests {
                 .as(Long.class);
 
         assertEquals(1L, sequence);
+
+        var person = template.select(PersonEntity.class)
+                .one()
+                .block();
+
+        assertNotNull(person);
+        assertEquals("Givenname Familyname", person.getName());
     }
 }
