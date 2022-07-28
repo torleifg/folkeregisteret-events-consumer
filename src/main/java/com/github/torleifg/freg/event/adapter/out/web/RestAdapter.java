@@ -5,7 +5,6 @@ import com.github.torleifg.freg.event.adapter.out.web.freg.event.EventMapper;
 import com.github.torleifg.freg.event.adapter.out.web.freg.event.EventTypesMappingWrapper;
 import com.github.torleifg.freg.event.adapter.out.web.freg.FregConnector;
 import com.github.torleifg.freg.event.adapter.out.web.freg.eventdocument.EventDocumentMappersWrapper;
-import com.github.torleifg.freg.event.adapter.out.web.maskinporten.JwtBearerGrantResponse;
 import com.github.torleifg.freg.event.adapter.out.web.maskinporten.MaskinportenConnector;
 import com.github.torleifg.freg.event.application.port.out.FregEventsService;
 import com.github.torleifg.freg.common.event.Event;
@@ -34,23 +33,20 @@ public class RestAdapter implements FregEventsService {
 
     @Override
     public Mono<Long> getExternalSequence() {
-        return maskinportenConnector.jwtGrantRequest()
-                .map(JwtBearerGrantResponse::getAccessToken)
+        return maskinportenConnector.getAccessToken()
                 .flatMap(fregConnector::getExternalSequence);
     }
 
     @Override
     public Flux<Event> getExternalEvents(Long sequence) {
-        return maskinportenConnector.jwtGrantRequest()
-                .map(JwtBearerGrantResponse::getAccessToken)
+        return maskinportenConnector.getAccessToken()
                 .flatMapMany(accessToken -> fregConnector.getEvents(accessToken, sequence))
                 .map(eventMapper::toDomain);
     }
 
     @Override
     public Mono<EventDocument> getEventDocument(String id) {
-        return maskinportenConnector.jwtGrantRequest()
-                .map(JwtBearerGrantResponse::getAccessToken)
+        return maskinportenConnector.getAccessToken()
                 .flatMap(accessToken -> fregConnector.getEventDocument(accessToken, id))
                 .map(FolkeregisteretTilgjengeliggjoeringHendelseV1DokumentForHendelse::getHendelse)
                 .map(this::toDomain);

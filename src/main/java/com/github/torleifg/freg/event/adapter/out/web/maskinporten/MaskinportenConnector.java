@@ -21,12 +21,13 @@ public class MaskinportenConnector {
         this.tokenEndpointURI = tokenEndpointURI;
     }
 
-    public Mono<JwtBearerGrantResponse> jwtGrantRequest() {
+    public Mono<String> getAccessToken() {
         return webClient.post()
                 .uri(tokenEndpointURI)
                 .body(fromFormData("grant_type", GrantType.JWT_BEARER.getValue())
                         .with("assertion", jwtBearerGrantGenerator.generate().getAssertion()))
                 .retrieve()
-                .bodyToMono(JwtBearerGrantResponse.class);
+                .bodyToMono(JwtBearerGrantResponse.class)
+                .map(JwtBearerGrantResponse::getAccessToken);
     }
 }
