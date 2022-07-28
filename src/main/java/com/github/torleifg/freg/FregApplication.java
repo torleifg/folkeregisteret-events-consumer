@@ -12,8 +12,3 @@ public class FregApplication {
 		SpringApplication.run(FregApplication.class, args);
 	}
 }
-
-/*
-TODO
-	- Skrive en systemtest
- */

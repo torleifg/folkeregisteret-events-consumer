@@ -21,6 +21,8 @@ import reactor.core.publisher.Mono;
 import static io.restassured.RestAssured.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class ApplicationTests {
@@ -28,11 +30,11 @@ class ApplicationTests {
     @LocalServerPort
     int port;
 
-    @MockBean
-    FregEventsService fregEventsService;
-
     @Autowired
     R2dbcEntityTemplate template;
+
+    @MockBean
+    FregEventsService fregEventsService;
 
     @BeforeEach
     void setUp() {
@@ -46,7 +48,7 @@ class ApplicationTests {
     }
 
     @Test
-    void test() {
+    void givenNewEventAndPersonExistsThenSequenceIsIncrementedAndNameOfPersonIsChangedTest() {
         template.insert(SequenceEntity.class)
                 .using(new SequenceEntity(0L))
                 .block();
@@ -55,13 +57,77 @@ class ApplicationTests {
                 .using(new PersonEntity("12345", "Firstname Lastname"))
                 .block();
 
-        var event = new Event(1L, new EventDetails(EventType.CHANGE_IN_NAME, "12345", "id"));
+        Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(2L));
+
+        Mockito.when(fregEventsService.getExternalEvents(anyLong())).thenReturn(Flux.just(
+                new Event(1L, new EventDetails(EventType.CHANGE_IN_NAME, "12345", "id-1")),
+                new Event(2L, new EventDetails(EventType.CHANGE_IN_NAME, "12345", "id-2")))
+        );
+
+        Mockito.when(fregEventsService.getEventDocument(anyString()))
+                .thenReturn(Mono.just(new NameChangedEventDocument("Given", "Family")))
+                .thenReturn(Mono.just(new NameChangedEventDocument("Givenname", "Familyname")));
+
+        var sequence = given()
+                .port(port)
+                .when()
+                .post("/events")
+                .then()
+                .log().ifError()
+                .statusCode(200)
+                .extract()
+                .as(Long.class);
+
+        assertEquals(2L, sequence);
+
+        var person = template.select(PersonEntity.class)
+                .one()
+                .block();
+
+        assertNotNull(person);
+        assertEquals("Givenname Familyname", person.getName());
+    }
+
+    @Test
+    void givenNoNewEventThenSequenceIsNotIncrementedTest() {
+        template.insert(SequenceEntity.class)
+                .using(new SequenceEntity(0L))
+                .block();
+
+        Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(0L));
+
+        var sequence = given()
+                .port(port)
+                .when()
+                .post("/events")
+                .then()
+                .log().ifError()
+                .statusCode(200)
+                .extract()
+                .as(Long.class);
+
+        assertEquals(0L, sequence);
+    }
+
+    @Test
+    void givenNewEventAndPersonNotExistsThenSequenceIsIncrementedTest() {
+        template.insert(SequenceEntity.class)
+                .using(new SequenceEntity(0L))
+                .block();
+
+        template.insert(PersonEntity.class)
+                .using(new PersonEntity("12345", "Firstname Lastname"))
+                .block();
+
 
         Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(1L));
-        Mockito.when(fregEventsService.getExternalEvents(0L)).thenReturn(Flux.just(event));
-        Mockito.when(fregEventsService.getEventDocument("id")).thenReturn(Mono.just(new NameChangedEventDocument("Givenname", "Familyname")));
 
-        var sequence = given().port(port)
+        Mockito.when(fregEventsService.getExternalEvents(anyLong())).thenReturn(Flux.just(
+                new Event(1L, new EventDetails(EventType.CHANGE_IN_NAME, "6789", "id")))
+        );
+
+        var sequence = given()
+                .port(port)
                 .when()
                 .post("/events")
                 .then()
@@ -77,6 +143,42 @@ class ApplicationTests {
                 .block();
 
         assertNotNull(person);
-        assertEquals("Givenname Familyname", person.getName());
+        assertEquals("Firstname Lastname", person.getName());
+    }
+
+    @Test
+    void givenNewEventAndPersonExistsAndNotIncludedEventTypeThenSequenceIsIncrementedTest() {
+        template.insert(SequenceEntity.class)
+                .using(new SequenceEntity(0L))
+                .block();
+
+        template.insert(PersonEntity.class)
+                .using(new PersonEntity("12345", "Firstname Lastname"))
+                .block();
+
+        Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(1L));
+
+        Mockito.when(fregEventsService.getExternalEvents(anyLong())).thenReturn(Flux.just(
+                new Event(1L, new EventDetails(EventType.CHANGE_IN_BIRTH, "12345", "id")))
+        );
+
+        var sequence = given()
+                .port(port)
+                .when()
+                .post("/events")
+                .then()
+                .log().ifError()
+                .statusCode(200)
+                .extract()
+                .as(Long.class);
+
+        assertEquals(1L, sequence);
+
+        var person = template.select(PersonEntity.class)
+                .one()
+                .block();
+
+        assertNotNull(person);
+        assertEquals("Firstname Lastname", person.getName());
     }
 }
