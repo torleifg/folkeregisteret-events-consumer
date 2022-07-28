@@ -1,0 +1,21 @@
+maskinporten:
+  wellknown: https://ver2.maskinporten.no/
+  client-id: cf320685-49df-4a85-9de3-69980a4f95d7
+  scope: folkeregister:deling/offentligmedhjemmel
+  kid: 3e002ed9-dcd2-406f-b8c4-0db35a091f58
+  jwks: keyset.jwks
+
+freg:
+  base-url: https://folkeregisteret-api-konsument.sits.no
+  sequence: /folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/siste/sekvensnummer
+  feed: /folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/feed
+  person: /folkeregisteret/offentlig-med-hjemmel/api/v1/personer/{personNin}
+  event-document: /folkeregisteret/offentlig-med-hjemmel/api/v1/hendelser/{id}
+
+events:
+  include: CHANGE_IN_NAME
+
+logging:
+  level:
+    org.springframework.r2dbc: INFO
+    # org.springframework.r2dbc: DEBUG

@@ -1,0 +1,67 @@
+package com.github.torleifg.freg.event.adapter.out.web.freg.event;
+
+import com.github.torleifg.freg.common.event.EventType;
+
+import java.util.Map;
+
+import static com.github.torleifg.freg.common.event.EventType.*;
+import static java.util.Map.entry;
+import static no.skatteetaten.folkeregisteret.model.FolkeregisteretTilgjengeliggjoeringHendelseV1Hendelse.HendelsestypeEnum;
+import static no.skatteetaten.folkeregisteret.model.FolkeregisteretTilgjengeliggjoeringHendelseV1Hendelse.HendelsestypeEnum.*;
+
+public final class EventTypesMappingWrapper {
+
+    private EventTypesMappingWrapper() {}
+
+    private static final Map<HendelsestypeEnum, EventType> MAPPING = Map.ofEntries(
+            entry(PERSONEROPPRETTET, PERSON_IS_CREATED),
+            entry(PERSONERREAKTIVERT, PERSON_IS_REACTIVATED),
+            entry(PERSONEROPPDATERT, PERSON_IS_UPDATED),
+            entry(PERSONEROPPHOERT, PERSON_HAS_CEASED),
+            entry(PERSONERVIDEREFOERTSOMGJELDENDEVEDSAMMENSLAAING, PERSON_IS_CONTINUED_AS_APPLICABLE_IN_MERGER),
+            entry(PERSONEROPPHOERTSOMDUBLETT, PERSON_HAS_CEASED_AS_DOUBLE),
+            entry(PERSONERENDRETVEDSPLITTING, PERSON_HAS_CHANGED_BY_SPLIT),
+            entry(PERSONERGJENOPPRETTETVEDSPLITTING, PERSON_IS_RESTORED_BY_SPLIT),
+            entry(PERSONERDOED, PERSON_IS_DEAD),
+            entry(PERSONERBOSATT, PERSON_IS_RESIDENT),
+            entry(PERSONERUTFLYTTET, PERSON_HAS_RELOCATED),
+            entry(ENDRINGISTATUS, CHANGE_IN_STATUS),
+            entry(ENDRINGIIDENTITETSGRUNNLAG, CHANGE_IN_IDENTITY_BASIS),
+            entry(ENDRINGIUTENLANDSKPERSONIDENTIFIKASJON, CHANGE_IN_FOREIGN_PERSON_IDENTIFICATION),
+            entry(ENDRINGIUTLENDINGSMYNDIGHETENESIDENTIFIKASJONSNUMMER, CHANGE_IN_THE_NATIONAL_AUTHORITIES_IDENTIFICATION_NUMBER),
+            entry(ENDRINGILEGITIMASJONSDOKUMENT, CHANGE_IN_IDENTIFICATION_DOCUMENT),
+            entry(ENDRINGIIDENTIFIKASJONSNUMMER, CHANGE_IN_IDENTIFICATION_NUMBER),
+            entry(ENDRINGIFALSKIDENTITET, CHANGE_IN_FALSE_IDENTITY),
+            entry(ENDRINGIKONTAKTOPPLYSNINGERFORDOEDSBO, CHANGE_IN_CONTACT_INFORMATION_FOR_ESTATE),
+            entry(ENDRINGIDELTBOSTED, CHANGE_IN_SHARED_RESIDENCE),
+            entry(ENDRINGIFOEDSEL, CHANGE_IN_BIRTH),
+            entry(ENDRINGIFOEDSELINORGE, CHANGE_IN_BIRTH_IN_NORWAY),
+            entry(ENDRINGIKJOENN, CHANGE_IN_GENDER),
+            entry(ENDRINGIFAMILIERELASJON, CHANGE_IN_FAMILY_RELATIONSHIP),
+            entry(ENDRINGISIVILSTAND, CHANGE_IN_CIVIL_STATUS),
+            entry(ENDRINGIDOEDSFALL, CHANGE_IN_DEATH),
+            entry(ENDRINGINAVN, CHANGE_IN_NAME),
+            entry(ENDRINGIADRESSEBESKYTTELSE, CHANGE_IN_ADDRESS_PROTECTION),
+            entry(ENDRINGIBOSTEDSADRESSE, CHANGE_IN_RESIDENCE_ADDRESS),
+            entry(ENDRINGIBOSTEDSADRESSEUTENFLYTTING, CHANGE_IN_RESIDENCE_ADDRESS_WITHOUT_MOVING),
+            entry(ENDRINGIOPPHOLDSADRESSE, CHANGE_IN_STAYING_ADDRESS),
+            entry(ENDRINGIINNFLYTTING, CHANGE_IN_IMMIGRATION),
+            entry(ENDRINGIUTFLYTTING, CHANGE_IN_EMIGRATION),
+            entry(ENDRINGIBRUKAVSAMISKSPRAAK, CHANGE_IN_USE_OF_SAMI_LANGUAGE),
+            entry(ENDRINGISAMETINGETSVALGMANNTALL, CHANGE_IN_THE_SAMI_PARLIAMENT_ELECTION_NUMBER),
+            entry(ENDRINGIKONTAKTINFORMASJON, CHANGE_IN_CONTACT_INFORMATION),
+            entry(ENDRINGIFORELDREANSVAR, CHANGE_IN_PARENTAL_RESPONSIBILITY),
+            entry(ENDRINGISTATSBORGERSKAP, CHANGE_IN_CITIZENSHIP),
+            entry(ENDRINGIOPPHOLD, CHANGE_IN_STAY),
+            entry(ENDRINGIOPPHOLDPAASVALBARD, CHANGE_IN_STAY_AT_SVALBARD),
+            entry(ENDRINGIVERGEMAAL, CHANGE_IN_GUARDIANSHIP),
+            entry(ENDRINGIPERSON, CHANGE_IN_PERSON));
+
+    public static EventType get(HendelsestypeEnum type) {
+        return MAPPING.get(type);
+    }
+
+    public static EventType get(String type) {
+        return MAPPING.get(HendelsestypeEnum.fromValue(type));
+    }
+}
