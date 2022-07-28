@@ -50,7 +50,7 @@ class ApplicationTests {
     @Test
     void givenNewEventAndPersonExistsThenSequenceIsIncrementedAndNameOfPersonIsChangedTest() {
         template.insert(SequenceEntity.class)
-                .using(new SequenceEntity(0L))
+                .using(new SequenceEntity(1L))
                 .block();
 
         template.insert(PersonEntity.class)
@@ -91,40 +91,10 @@ class ApplicationTests {
     @Test
     void givenNoNewEventThenSequenceIsNotIncrementedTest() {
         template.insert(SequenceEntity.class)
-                .using(new SequenceEntity(0L))
+                .using(new SequenceEntity(1L))
                 .block();
-
-        Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(0L));
-
-        var sequence = given()
-                .port(port)
-                .when()
-                .post("/events")
-                .then()
-                .log().ifError()
-                .statusCode(200)
-                .extract()
-                .as(Long.class);
-
-        assertEquals(0L, sequence);
-    }
-
-    @Test
-    void givenNewEventAndPersonNotExistsThenSequenceIsIncrementedTest() {
-        template.insert(SequenceEntity.class)
-                .using(new SequenceEntity(0L))
-                .block();
-
-        template.insert(PersonEntity.class)
-                .using(new PersonEntity("12345", "Firstname Lastname"))
-                .block();
-
 
         Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(1L));
-
-        Mockito.when(fregEventsService.getExternalEvents(anyLong())).thenReturn(Flux.just(
-                new Event(1L, new EventDetails(EventType.CHANGE_IN_NAME, "6789", "id")))
-        );
 
         var sequence = given()
                 .port(port)
@@ -137,6 +107,36 @@ class ApplicationTests {
                 .as(Long.class);
 
         assertEquals(1L, sequence);
+    }
+
+    @Test
+    void givenNewEventAndPersonNotExistsThenSequenceIsIncrementedTest() {
+        template.insert(SequenceEntity.class)
+                .using(new SequenceEntity(1L))
+                .block();
+
+        template.insert(PersonEntity.class)
+                .using(new PersonEntity("12345", "Firstname Lastname"))
+                .block();
+
+        Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(2L));
+
+        Mockito.when(fregEventsService.getExternalEvents(anyLong())).thenReturn(Flux.just(
+                new Event(1L, new EventDetails(EventType.CHANGE_IN_NAME, "6789", "id-1")),
+                new Event(2L, new EventDetails(EventType.CHANGE_IN_NAME, "6789", "id-2")))
+        );
+
+        var sequence = given()
+                .port(port)
+                .when()
+                .post("/events")
+                .then()
+                .log().ifError()
+                .statusCode(200)
+                .extract()
+                .as(Long.class);
+
+        assertEquals(2L, sequence);
 
         var person = template.select(PersonEntity.class)
                 .one()
@@ -149,17 +149,18 @@ class ApplicationTests {
     @Test
     void givenNewEventAndPersonExistsAndNotIncludedEventTypeThenSequenceIsIncrementedTest() {
         template.insert(SequenceEntity.class)
-                .using(new SequenceEntity(0L))
+                .using(new SequenceEntity(1L))
                 .block();
 
         template.insert(PersonEntity.class)
                 .using(new PersonEntity("12345", "Firstname Lastname"))
                 .block();
 
-        Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(1L));
+        Mockito.when(fregEventsService.getExternalSequence()).thenReturn(Mono.just(2L));
 
         Mockito.when(fregEventsService.getExternalEvents(anyLong())).thenReturn(Flux.just(
-                new Event(1L, new EventDetails(EventType.CHANGE_IN_BIRTH, "12345", "id")))
+                new Event(1L, new EventDetails(EventType.CHANGE_IN_BIRTH, "12345", "id-1")),
+                new Event(2L, new EventDetails(EventType.CHANGE_IN_DEATH, "12345", "id-2")))
         );
 
         var sequence = given()
@@ -172,7 +173,7 @@ class ApplicationTests {
                 .extract()
                 .as(Long.class);
 
-        assertEquals(1L, sequence);
+        assertEquals(2L, sequence);
 
         var person = template.select(PersonEntity.class)
                 .one()
