@@ -1,4 +1,4 @@
-*.jwks
+keyset.jwks
 application-*.yaml
 
 HELP.md

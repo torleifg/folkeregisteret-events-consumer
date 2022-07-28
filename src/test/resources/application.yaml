@@ -3,7 +3,7 @@ maskinporten:
   client-id: cf320685-49df-4a85-9de3-69980a4f95d7
   scope: folkeregister:deling/offentligmedhjemmel
   kid: 3e002ed9-dcd2-406f-b8c4-0db35a091f58
-  jwks: keyset.jwks
+  jwks: keyset-test.jwks
 
 freg:
   base-url: https://folkeregisteret-api-konsument.sits.no
